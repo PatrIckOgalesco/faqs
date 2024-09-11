@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MacOS Terminal Interface</title>
+    <style>
+        /* Base styles (default for large screens) */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+        }
+
+        body {
+            position: relative;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #000; /* Fallback to prevent white edges */
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-image: url('../Faqs/iridescence2.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+
+        }
+
+        .window {
+            position: relative;
+            z-index: 1; /* Ensures the terminal content is above the background blur */
+        }
+
+
+
+        .window {
+            display: flex;
+            flex-direction: column;
+            width: 800px;
+            height: 500px;
+            background-color: #ece8e1;
+            border-top-left-radius: 50px;    /* Top-left corner */
+            border-top-right-radius: 10px;   /* Top-right corner */
+            border-bottom-right-radius: 25px; /* Bottom-right corner */
+            border-bottom-left-radius: 5px;   /* Bottom-left corner */
+            box-shadow: 0 0 20px rgba(0, 0, 0, 1);
+            color: #343541;
+        }
+
+
+        .window__taskbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f0f0f0;
+            padding: 10px 15px;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            border-bottom: 1px solid #ccc;
+            height: 50px;
+        }
+
+        .window__taskbar--actions button {
+            width: 15px;
+            height: 15px;
+            margin-right: 2px;
+            border-radius: 50%;
+            border: none;
+        }
+
+        .close {
+            background-color: #ff5f57;
+        }
+
+        .minimize {
+            background-color: #ffbd2e;
+        }
+
+        .maximize {
+            background-color: #28c940;
+        }
+
+        .terminal_content {
+            flex: 1;
+            overflow-y: scroll;
+            padding: 15px;
+            background-color: #f1f1f1;
+            color: #000000;
+            font-size: 14px;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+        }
+
+        .terminal_line p {
+            margin: 0;
+        }
+
+        .color_green {
+            color: #00ff00;
+        }
+
+        .color_blue {
+            color: #007aff;
+        }
+
+        /* Prevent contenteditable from inserting new lines or blocks */
+        .cursor {
+            outline: none;
+            display: inline;
+            white-space: nowrap; /* Prevent wrapping */
+            word-break: keep-all; /* Keep text together */
+        }
+
+        .cursor:focus {
+            outline: none;
+        }
+
+        .cursor::after {
+            content: '';
+            display: inline-block;
+            width: 10px;
+            height: 18px;
+            background-color: #00ff00;
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            0% { background-color: #00ff00; }
+            50% { background-color: transparent; }
+            100% { background-color: #00ff00; }
+        }
+
+        /* Media Queries */
+        /* Media Queries */
+        /* Mobile view */
+        @media (max-width: 480px) {
+            html, body {
+                margin: 0; /* Remove default margin */
+                padding: 0; /* Remove default padding */
+                height: 100%; /* Ensure body takes up full height */
+            }
+
+            .window {
+                width: calc(100% - 20px); /* 10px margin on each side */
+                height: calc(100vh - 20px); /* Full viewport height minus 10px top and bottom margins */
+                margin: 10px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); /* Optional: Adjust shadow for better visibility on small screens */
+                display: flex;
+                flex-direction: column;
+                box-sizing: border-box; /* Include padding and border in width and height */
+            }
+
+            .terminal_content {
+                font-size: 12px;
+                padding: 10px;
+                overflow-y: auto; /* Ensure scroll if content overflows */
+                flex: 1; /* Allow content area to expand and fill available space */
+            }
+
+            .window__taskbar {
+                padding: 5px 10px;
+            }
+
+            .window__taskbar--actions button {
+                width: 10px;
+                height: 10px;
+            }
+
+            .cursor::after {
+                width: 8px;
+                height: 14px;
+            }
+        }
+
+
+
+        /* Tablet portrait */
+        @media (max-width: 768px) {
+            .window {
+                width: 100%;
+                height: 400px;
+            }
+        }
+
+        /* Mobile landscape and tablet portrait */
+        @media (max-width: 1024px) and (min-width: 769px) {
+            .window {
+                width: 90%;
+                height: 450px;
+            }
+        }
+
+        /* Mobile landscape */
+        @media (max-width: 480px) {
+            .window {
+                width: 100%;
+                height: 300px;
+            }
+
+            .terminal_content {
+                font-size: 12px;
+                padding: 10px;
+            }
+
+            .window__taskbar {
+                padding: 5px 10px;
+            }
+
+            .window__taskbar--actions button {
+                width: 10px;
+                height: 10px;
+            }
+
+            .cursor::after {
+                width: 8px;
+                height: 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="window terminal">
+        <div class="window__taskbar">
+            <div class="window__taskbar--actions">
+                <button class="close"></button>
+                <button class="minimize"></button>
+                <button class="maximize"></button>
+            </div>
+            <div class="window__taskbar--content">
+                <h3>Terminal</h3>
+            </div>
+        </div>
+        <div class="terminal_content" id="terminal-content">
+            <p>
+                ~ $ Welcome to the CPIC FAQ Bot Experience!<br>
+                ~ $ Version 1.1.0 | Rule-Based FAQ Bot<br>
+                ~ $ Developed by <span>&lt;\&gt; Erika Melgar</span><br>
+                ~ $ Environment successfully initialized. Type a query to begin the conversation...
+            </p><br>
+
+            <!-- Initial Terminal Line -->
+            <div class="terminal_line">
+                <p>
+                    <span class="color_green">➜</span>&nbsp;&nbsp;
+                    <span class="color_blue">~</span>&nbsp;
+                    <span contenteditable="true" class="cursor"></span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    let terminal_line_html = `
+        <div class="terminal_line">
+            <p>
+                <span class="color_green">➜</span>&nbsp;&nbsp;
+                <span class="color_blue">~</span>&nbsp;
+                <span contenteditable="true" class="cursor"></span>
+            </p>
+        </div>
+    `;
+
+    let path = "~";
+
+    function placeCaretAtEnd(el) {
+        el.focus();
+        if (typeof window.getSelection !== "undefined" && typeof document.createRange !== "undefined") {
+            let range = document.createRange();
+            range.selectNodeContents(el);
+            range.collapse(false);
+            let sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+        }
+    }
+
+    async function typeResponse(responseText, answer) {
+        let i = 0;
+        while (i < answer.length) {
+            const char = answer[i];
+            if (char === "<") {
+                const tagEnd = answer.indexOf(">", i);
+                i = tagEnd + 1;
+            } else {
+                responseText.innerHTML = answer.substring(0, i + 1);
+                await sleep(15); // Adjust typing speed here
+                i++;
+            }
+        }
+    }
+
+    function init_terminal_line() {
+        $(".cursor").keydown(async function (e) {
+            if (e.keyCode === 13) {
+                e.preventDefault();
+                let command = $(this).html().trim(); // Remove extra spaces
+                if (!command) return;
+
+                let response = `zsh: command not found: ${command}<br>`; // Default response
+
+                switch (command.toLowerCase()) {
+                    case 'hi':
+                    case 'hello':
+                        response = `
+                            Hello there! Welcome to the Christian Polytechnic Institute of Catanduanes (CPIC) chat platform. How can I assist you today? Whether you're exploring courses, admissions, or just curious about life at CPIC, feel free to ask!
+                        `;
+                        break;
+                    case 'what courses do you offer?':
+                        response = `
+                            CPIC offers a variety of programs in fields such as Information Technology, Education, Business, and more. You can explore undergraduate and vocational courses designed to prepare students for professional success.
+                        `;
+                        break;
+                    case 'what is your admission process?':
+                        response = `
+                            The admission process at CPIC involves submitting your application form, meeting the necessary academic requirements, and completing an entrance examination. For more details, visit the admissions section on our website.
+                        `;
+                        break;
+                    default:
+                        response = `zsh: command not found: ${command}<br>`;
+                }
+
+                // Display the user input and response
+                $(".cursor").parent().remove(); // Remove the current cursor line
+                let userCommandHtml = `<p><span class="color_green">➜</span>&nbsp;&nbsp;<span class="color_blue">${path}</span>&nbsp;${command}</p>`;
+                $("#terminal-content").append(userCommandHtml);
+
+                // Create a new div for the response
+                let responseDiv = document.createElement("div");
+                responseDiv.className = "terminal_line";
+                let responseText = document.createElement("p");
+                responseText.className = "response";
+                responseDiv.appendChild(responseText);
+                $("#terminal-content").append(responseDiv);
+
+                // Type out the response
+                await typeResponse(responseText, response);
+
+                // Add a line break after the response
+                $("#terminal-content").append("<br>");
+
+                // Add a new terminal line for user input
+                $("#terminal-content").append(terminal_line_html);
+                placeCaretAtEnd(document.querySelector(".cursor"));
+                init_terminal_line();
+            }
+        });
+    }
+
+    init_terminal_line();
+</script>
+
+</body>
+</html>
