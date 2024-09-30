@@ -9,7 +9,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family:  'Courier New', monospace;
+            font-family: 'Courier New', monospace;
             font-size: 12px;
         }
 
@@ -31,23 +31,25 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            background-image: url('./iridescence3.jpg');
+            background-image: url('../Faqs/iridescence3.jpg');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
         }
+.window {
+    position: relative;
+    z-index: 1; /* Ensures the terminal content is above the background blur */
+    display: flex;
+    flex-direction: column;
+    width: 80%; /* Set the desired width (e.g., 80% of the viewport) */
+    height: 60vh; /* Set the desired height (e.g., 60% of the viewport height) */
+    max-width: 900px; /* Optional: max width for larger screens */
+    max-height: 600px; /* Optional: max height for larger screens */
+    background-color: #ece8e1;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 1);
+    color: #343541;
+}
 
-        .window {
-            position: relative;
-            z-index: 1; /* Ensures the terminal content is above the background blur */
-            display: flex;
-            flex-direction: column;
-            width: 800px;
-            height: 500px;
-            background-color: #ece8e1;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 1);
-            color: #343541;
-        }
 
         .window__taskbar {
             display: flex;
@@ -85,10 +87,7 @@
         .terminal_line p {
             margin: 0;
         }
-        h4 {
-            font-weight: bold;
-        }
-        
+
         .color_green { color: #00ff00; }
         .color_blue { color: #007aff; }
 
@@ -196,7 +195,6 @@
     <div id="intelliSenseContainer" class="intelli-sense-dropdown"></div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     function sleep(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
@@ -248,6 +246,11 @@
         }
     }
 
+    function scrollToBottom() {
+        const terminalContent = document.getElementById('terminal-content');
+        terminalContent.scrollTop = terminalContent.scrollHeight;
+    }
+
     function showIntelliSense(event) {
         const inputText = event.target.innerText.trim().toLowerCase();
         const suggestions = predictiveTextOptions.filter(option => option.toLowerCase().startsWith(inputText));
@@ -255,7 +258,8 @@
         const intelliSenseContainer = $("#intelliSenseContainer");
         intelliSenseContainer.empty();
 
-        if (suggestions.length > 0) {
+        // Show suggestions only if input length is greater than 0
+        if (inputText.length > 0 && suggestions.length > 0) {
             suggestions.forEach(option => {
                 const suggestionElement = $(`<p>${option}</p>`);
                 suggestionElement.on('click', function() {
@@ -273,7 +277,7 @@
                 display: 'block' // Show suggestions
             });
         } else {
-            intelliSenseContainer.hide(); // Hide if no suggestions
+            intelliSenseContainer.hide(); // Hide if no suggestions or input is empty
         }
     }
 
@@ -284,7 +288,7 @@
         $("#intelliSenseContainer").hide(); // Hide suggestions after selection
     }
 
-    function init_terminal_line() {
+    async function init_terminal_line() {
         $(".cursor").keydown(async function (e) {
             if (e.keyCode === 13) { // Enter key
                 e.preventDefault();
@@ -324,6 +328,9 @@
                 $("#terminal-content").append(terminal_line_html);
                 placeCaretAtEnd(document.querySelector(".cursor"));
                 init_terminal_line();
+
+                // Scroll to the bottom after adding new content
+                scrollToBottom();
             }
         });
     }
@@ -335,6 +342,8 @@
     // Ensure IntelliSense container exists
     $('body').append('<div id="intelliSenseContainer" style="display:none; position:absolute; background:white; border:1px solid black; z-index:1000; max-width:90vw; max-height:150px; overflow-y:auto; box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); padding: 5px; font-family: "Courier New", monospace; font-size: 12px;"></div>');
 </script>
+
+
 
 
 
